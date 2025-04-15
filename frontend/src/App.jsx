@@ -3,23 +3,24 @@ import "./App.css";
 
 function App() {
     const [status, setStatus] = useState("Loading...");
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
 
     useEffect(() => {
         // Check backend health
-        fetch("http://localhost:8080/health")
+        fetch(`${apiUrl}/health`)
             .then((response) => response.json())
             .then((data) => {
                 setStatus(
                     data.status === "ok"
-                        ? "Backend is connected!"
-                        : "Backend connection issue"
+                        ? `Backend is connected! ${data.message || ""}`
+                        : `Backend connection issue: ${data.message || ""}`
                 );
             })
             .catch((error) => {
                 console.error("Error connecting to backend:", error);
                 setStatus("Failed to connect to backend");
             });
-    }, []);
+    }, [apiUrl]);
 
     return (
         <div className="App">

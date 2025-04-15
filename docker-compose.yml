@@ -11,8 +11,12 @@ services:
     environment:
       - NODE_ENV=development
       - REACT_APP_API_URL=http://localhost:8080
+      - WDS_SOCKET_HOST=127.0.0.1
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
+    networks:
+      - app-network
 
   backend:
     build:
@@ -32,6 +36,8 @@ services:
       - GIN_MODE=debug
     depends_on:
       - db
+    networks:
+      - app-network
 
   db:
     image: postgres:15-alpine
@@ -44,6 +50,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
