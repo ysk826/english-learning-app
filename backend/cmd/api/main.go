@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
+	"english-learning-app/internal/api/routes"
 	"english-learning-app/internal/config"
 	"english-learning-app/internal/database"
+	"fmt"
+	"log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -41,7 +41,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// Routes
+	// Health check route
 	r.GET("/health", func(c *gin.Context) {
 		// Check database connection
 		sqlDB, err := db.DB()
@@ -68,40 +68,8 @@ func main() {
 		})
 	})
 
-	// API v1 group
-	v1 := r.Group("/api/v1")
-	{
-		// These will be implemented later
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/register", func(c *gin.Context) {
-				c.JSON(501, gin.H{"message": "Not implemented yet"})
-			})
-			auth.POST("/login", func(c *gin.Context) {
-				c.JSON(501, gin.H{"message": "Not implemented yet"})
-			})
-		}
-
-		words := v1.Group("/words")
-		{
-			words.GET("", func(c *gin.Context) {
-				c.JSON(501, gin.H{"message": "Not implemented yet"})
-			})
-			words.POST("", func(c *gin.Context) {
-				c.JSON(501, gin.H{"message": "Not implemented yet"})
-			})
-		}
-
-		sentences := v1.Group("/sentences")
-		{
-			sentences.GET("", func(c *gin.Context) {
-				c.JSON(501, gin.H{"message": "Not implemented yet"})
-			})
-			sentences.POST("", func(c *gin.Context) {
-				c.JSON(501, gin.H{"message": "Not implemented yet"})
-			})
-		}
-	}
+	// Setup all routes
+	routes.SetupRoutes(r, db)
 
 	// Determine port for HTTP service
 	port := cfg.Port
