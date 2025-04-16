@@ -27,7 +27,7 @@ func GenerateToken(userID uint, username string, secretKey string) (string, erro
 	return token.SignedString([]byte(secretKey))
 }
 
-// ValidateToken validates the JWT token and returns the claims
+// クライアントから送信されたJWTトークンを検証する関数
 func ValidateToken(tokenString string, secretKey string) (*JWTClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
