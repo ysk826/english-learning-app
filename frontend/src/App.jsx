@@ -1,42 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import "./App.css";
+import HomePage from "./pages/HomePage";
+import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
-    const [status, setStatus] = useState("Loading...");
-    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8080";
-
-    useEffect(() => {
-        // Check backend health
-        fetch(`${apiUrl}/health`)
-            .then((response) => response.json())
-            .then((data) => {
-                setStatus(
-                    data.status === "ok"
-                        ? `Backend is connected! ${data.message || ""}`
-                        : `Backend connection issue: ${data.message || ""}`
-                );
-            })
-            .catch((error) => {
-                console.error("Error connecting to backend:", error);
-                setStatus("Failed to connect to backend");
-            });
-    }, [apiUrl]);
-
     return (
-        <div className="App">
-            <header className="App-header">
-                <h1>English Learning App</h1>
-                <p>Backend Status: {status}</p>
-                <div>
-                    <h2>Features coming soon:</h2>
-                    <ul>
-                        <li>User Registration</li>
-                        <li>Word Collection</li>
-                        <li>Sentence Creation</li>
-                    </ul>
+        <AuthProvider>
+            <Router>
+                <div className="App">
+                    <nav className="navbar">
+                        <div className="navbar-brand">English Learning App</div>
+                        <ul className="navbar-nav">
+                            <li className="nav-item">
+                                <Link to="/" className="nav-link">
+                                    Home
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link to="/register" className="nav-link">
+                                    Register
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link to="/login" className="nav-link">
+                                    Login
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                    </Routes>
                 </div>
-            </header>
-        </div>
+            </Router>
+        </AuthProvider>
     );
 }
 
