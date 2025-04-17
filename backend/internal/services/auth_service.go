@@ -6,36 +6,37 @@ import (
 	"errors"
 )
 
-// AuthService defines the interface for authentication operations
+// インターフェイスの定義、メソッドの振る舞いを抽象化
 type AuthService interface {
 	Register(username, email, password string) (*models.User, error)
 	Login(email, password string) (*models.User, error)
 }
 
-// authService implements the AuthService interface
+// 実装構造体
 type authService struct {
 	userRepo repository.UserRepository
 }
 
-// NewAuthService creates a new authentication service
+// 構造体を初期化する関数
+// 作成したポインタ型の構造体をインターフェイス型として返す
 func NewAuthService(userRepo repository.UserRepository) AuthService {
 	return &authService{
 		userRepo: userRepo,
 	}
 }
 
-// Register registers a new user
+// ユーザー登録
 func (s *authService) Register(username, email, password string) (*models.User, error) {
-	// Check if email already exists
+	// メールアドレスを使用してユーザーを検索
 	existingUser, err := s.userRepo.FindByEmail(email)
 	if err != nil {
 		return nil, err
 	}
 	if existingUser != nil {
-		return nil, errors.New("email already registered")
+		return nil, errors.New("このメールアドレスはすでに使用されています")
 	}
 
-	// Check if username already exists
+	// ユーザー名の重複チェック
 	existingUser, err = s.userRepo.FindByUsername(username)
 	if err != nil {
 		return nil, err
@@ -44,18 +45,18 @@ func (s *authService) Register(username, email, password string) (*models.User, 
 		return nil, errors.New("username already taken")
 	}
 
-	// Create new user
+	// 新しいユーザーを作成
 	user := &models.User{
 		Username: username,
 		Email:    email,
 	}
 
-	// Set password hash
+	// パスワードをハッシュ化
 	if err := user.SetPassword(password); err != nil {
 		return nil, err
 	}
 
-	// Save user to database
+	// ユーザーをデータベースに保存
 	if err := s.userRepo.Create(user); err != nil {
 		return nil, err
 	}
@@ -63,9 +64,9 @@ func (s *authService) Register(username, email, password string) (*models.User, 
 	return user, nil
 }
 
-// Login authenticates a user
+// ログイン処理
 func (s *authService) Login(email, password string) (*models.User, error) {
-	// Find user by email
+	// メールアドレスを使用してユーザーを検索
 	user, err := s.userRepo.FindByEmail(email)
 	if err != nil {
 		return nil, err
@@ -74,10 +75,11 @@ func (s *authService) Login(email, password string) (*models.User, error) {
 		return nil, errors.New("invalid credentials")
 	}
 
-	// Check password
+	// パスワードを検証
 	if !user.CheckPassword(password) {
 		return nil, errors.New("invalid credentials")
 	}
 
+	// ログインが成功した場合、ユーザー情報を返す
 	return user, nil
 }

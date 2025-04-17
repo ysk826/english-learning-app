@@ -12,13 +12,13 @@ import (
 
 // SetupRoutes configures all API routes
 func SetupRoutes(r *gin.Engine, db *gorm.DB) {
-	// Initialize repositories
+	// データベース接続（db）を外部から受け取り、それをリポジトリに注入
 	userRepo := repository.NewUserRepository(db)
 
-	// Initialize services
+	// リポジトリをサービスに注入
 	authService := services.NewAuthService(userRepo)
 
-	// Initialize handlers
+	// サービスをハンドラに注入
 	authHandler := handlers.NewAuthHandler(authService)
 
 	// Public routes
