@@ -1,21 +1,33 @@
+# バックエンドアプリとPostgreSQLの両方を含む単一のDockerfile
 FROM golang:1.23-alpine
 
 WORKDIR /app
 
-# Install air for hot reload
-RUN go install github.com/air-verse/air@latest
+# PostgreSQLのインストール
+RUN apk add --no-cache postgresql postgresql-contrib
 
-# Copy go.mod and go.sum files
-COPY go.mod go.sum* ./
+# アプリケーションのビルド
+COPY go.mod go.sum ./
 RUN go mod download
-
-# Copy the rest of the application
 COPY . .
+RUN go build -o main ./cmd/api
 
-# Copy air configuration
-COPY .air.toml .
+# PostgreSQL初期化
+USER postgres
+RUN mkdir -p /run/postgresql && chown -R postgres:postgres /run/postgresql/
+RUN mkdir -p /var/lib/postgresql/data && chmod 0700 /var/lib/postgresql/data
+RUN initdb -D /var/lib/postgresql/data
 
-EXPOSE 8080
+# PostgreSQL設定
+RUN echo "host all all 0.0.0.0/0 md5" >> /var/lib/postgresql/data/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf
 
-# Use air for hot reload in development
-CMD ["air", "-c", ".air.toml"]
+# 起動スクリプトの追加
+USER root
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 5432
+EXPOSE 10000
+
+CMD ["/start.sh"]
