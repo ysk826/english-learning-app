@@ -51,3 +51,4 @@ go.work
 postgres_data/
 
 repomix-output.txt
+repomix-output.xml
