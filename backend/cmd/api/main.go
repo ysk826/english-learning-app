@@ -4,8 +4,10 @@ import (
 	"english-learning-app/internal/api/routes"
 	"english-learning-app/internal/config"
 	"english-learning-app/internal/database"
+	"english-learning-app/internal/models"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -13,7 +15,7 @@ import (
 )
 
 func main() {
-	// Load environment variables from .env file if it exists
+	// .envファイルの読み込み
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found or error loading it")
 	}
@@ -68,8 +70,45 @@ func main() {
 		})
 	})
 
-	// Setup all routes
+	// ルートのセットアップ
 	routes.SetupRoutes(r, db)
+
+	//  管理者用APIグループの追加（ステップ1）
+	admin := r.Group("/admin")
+
+	// 管理者用認証ミドルウェアの追加（ステップ2）
+	admin.Use(func(c *gin.Context) {
+		// ヘッダーからトークンを取得
+		adminToken := c.GetHeader("X-Admin-Token")
+		// 環境変数から期待されるトークンを取得
+		expectedToken := getEnv("ADMIN_TOKEN", "default_secure_token")
+
+		// トークンが一致しない場合は認証エラー
+		if adminToken != expectedToken {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+			return
+		}
+		// 認証成功の場合は次の処理へ
+		c.Next()
+	})
+
+	// ユーザー一覧取得エンドポイントの実装（ステップ3）
+	admin.GET("/users", func(c *gin.Context) {
+		var users []models.User
+		// データベースからすべてのユーザーを取得
+		if err := db.Find(&users).Error; err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+
+		// パスワードハッシュなどの機密情報を隠す
+		for i := range users {
+			users[i].PasswordHash = "[HIDDEN]"
+		}
+
+		// ユーザーリストをJSON形式で返す
+		c.JSON(200, users)
+	})
 
 	// Determine port for HTTP service
 	port := cfg.Port
@@ -79,4 +118,12 @@ func main() {
 	if err := r.Run(":" + port); err != nil {
 		log.Fatal("Server failed to start:", err)
 	}
+}
+
+// 管理者用トークンを環境変数から取得する関数
+func getEnv(key, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultVal
 }
