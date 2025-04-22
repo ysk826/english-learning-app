@@ -18,5 +18,18 @@ export DB_SSL_MODE=disable
 export PORT=10000
 export GIN_MODE=release
 
-# アプリケーションを起動
-/app/main
+# 実行ファイルの確認
+echo "現在のディレクトリ:"
+pwd
+echo "ファイル一覧:"
+ls -la
+
+# 実行ファイルが存在するか確認
+if [ -f "/app/main" ]; then
+    echo "実行ファイルが存在します"
+    # アプリケーションを起動
+    exec /app/main
+else
+    echo "実行ファイルが見つかりません"
+    exit 1
+fi

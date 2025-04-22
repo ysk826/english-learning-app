@@ -1,0 +1,19 @@
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+# 必要なツールをインストール
+RUN go install github.com/air-verse/air@latest
+
+# 依存関係をコピーしてダウンロード
+COPY go.mod go.sum ./
+RUN go mod download
+
+# .airの設定をコピー
+COPY .air.toml .
+
+# ポート設定
+EXPOSE 8080
+
+# air を使用してホットリロード
+CMD ["air", "-c", ".air.toml"]

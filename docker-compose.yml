@@ -21,9 +21,10 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ./backend:/app
+      - /app/tmp
     ports:
       - "8080:8080"
     environment:
@@ -34,6 +35,7 @@ services:
       - DB_NAME=english_app
       - DB_SSL_MODE=disable
       - GIN_MODE=debug
+      - ADMIN_TOKEN=dev_admin_token
     depends_on:
       - db
     networks:
