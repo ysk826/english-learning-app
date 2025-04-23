@@ -6,6 +6,9 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+# マイグレーションファイルをビルドステージにコピー
+COPY ../db/migrations /migrations
+
 # ソースコードをコピー
 COPY . .
 
