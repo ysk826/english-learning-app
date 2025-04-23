@@ -39,6 +39,9 @@ USER root
 WORKDIR /app
 COPY --from=builder /app/main .
 
+# マイグレーションファイルをコピー
+COPY --from=builder /app/../db/migrations /app/db/migrations
+
 # 起動スクリプトをコピー
 COPY start.sh /start.sh
 RUN chmod +x /start.sh

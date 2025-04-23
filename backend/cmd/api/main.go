@@ -20,19 +20,26 @@ func main() {
 		log.Println("No .env file found or error loading it")
 	}
 
-	// Load configuration
+	// configの初期化
 	cfg := config.New()
 
-	// Set Gin mode
+	// configの読み込み
 	gin.SetMode(cfg.GinMode)
 
-	// Initialize database connection
+	// データベースの接続
 	db, err := database.New(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Initialize router
+	// Run database migrations
+	migrationDSN := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
+	if err := database.RunMigrations(migrationDSN); err != nil {
+		log.Printf("Warning: Migration failed: %v", err)
+	}
+
+	// ルータの初期化
 	r := gin.Default()
 
 	// Configure CORS
