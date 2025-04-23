@@ -19,7 +19,6 @@ WORKDIR /app
 
 # ビルダーからバイナリをコピー
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env .env
 
 # ポート設定
 EXPOSE 10000
