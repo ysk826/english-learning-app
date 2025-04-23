@@ -39,6 +39,13 @@ func main() {
 		log.Printf("Warning: Migration failed: %v", err)
 	}
 
+	// 開発環境の場合はシードデータを実行
+	if cfg.GinMode == "debug" {
+		if err := database.RunSeeds(db, "db/seeds/seed_data.sql"); err != nil {
+			log.Printf("Warning: Seed data loading failed: %v", err)
+		}
+	}
+
 	// ルータの初期化
 	r := gin.Default()
 
