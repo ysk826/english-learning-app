@@ -6,9 +6,6 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# マイグレーションファイルをビルドステージにコピー
-COPY ../db/migrations /migrations
-
 # ソースコードをコピー
 COPY . .
 
@@ -18,11 +15,10 @@ RUN go build -o main ./cmd/api
 # PostgreSQLを含む最終イメージ
 FROM postgres:15-alpine
 
-# PostgreSQLのインストール
-# Goアプリケーションの実行に必要なツール
+# 必要なツールをインストール
 RUN apk add --no-cache curl tzdata
 
-# PostgreSQL用のディレクトリを準備（rootユーザーで実行）
+# PostgreSQL用のディレクトリを準備
 RUN mkdir -p /run/postgresql && \
     mkdir -p /var/lib/postgresql/data && \
     chown -R postgres:postgres /run/postgresql/ && \
@@ -42,8 +38,11 @@ USER root
 WORKDIR /app
 COPY --from=builder /app/main .
 
-# マイグレーションファイルをコピー
-COPY --from=builder /app/../db/migrations /app/db/migrations
+# マイグレーション用のディレクトリを作成
+RUN mkdir -p /app/db/migrations
+
+# ビルダーステージからマイグレーションファイルをコピー
+COPY --from=builder /app/db/migrations /app/db/migrations
 
 # 起動スクリプトをコピー
 COPY start.sh /start.sh
