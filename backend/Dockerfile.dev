@@ -1,19 +1,24 @@
+# alpineベースのGo開発環境を構築するDockerfile
 FROM golang:1.23-alpine
 
+# ルートの直下に作業ディレクトリを作成
 WORKDIR /app
 
-# 必要なツールをインストール
+# コンテナ環境ですぐにビルドできるように、airをインストール
 RUN go install github.com/air-verse/air@latest
 
-# 依存関係をコピーしてダウンロード
+# ホストマシン上にあるgo.mod go.sumをコンテナの/appにコピー
 COPY go.mod go.sum ./
+
+# 依存関係をダウンロード
 RUN go mod download
 
-# .airの設定をコピー
-COPY .air.toml .
+# ホストマシン上にある.air.tomlをコンテナの/appにコピー
+COPY .air.toml ./
 
-# ポート設定
+# コンテナが8080ポートでリッスンするように設定
 EXPOSE 8080
 
 # air を使用してホットリロード
+# -cオプションで、.air.tomlを指定
 CMD ["air", "-c", ".air.toml"]
